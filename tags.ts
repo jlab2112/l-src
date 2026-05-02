@@ -1,275 +1,192 @@
-import { MessageBuilder } from 'prismarine-chat'
-import type { LilithClient } from '@/client'
-import config from '@/config'
-import { VERSION } from '@/constants'
-import { getCachedInfo } from '@/licensing'
+import { registerCommand } from '@/commands/handler'
+import { chat, chatJson, chatPurchase } from '@/utils/chat'
 import { permission } from '@/utils/permissions'
+import resolveUsername from '@/utils/resolveUsername'
+import lilithWebsocket from '@/websocket/socket'
+import Subcommand from '../../utils/subcommands'
 
-let venxmtagsMap: null | Map<string, string> = null
+/**
+ * Filename: tags.mdx
+ * Command: ltag
+ * Byline: Add tags to players.
+ * Usage: `/ltag <set|remove|join|invite> [args]`
+ * Added: Version 1.0.11
+ *
+ * Description:
+ * <Info>
+ * This feature is only available with [Lilith Pro](https://lilith.rip/#pricing) or higher.
+ * </Info>
+ * ### Manage tags
+ * `/ltag set [ign/uuid] [tag]`
+ * The tag argument accepts formatting codes using the prefix `&`. For a complete list of formatting codes, refer to [this list](https://minecraft.wiki/w/Formatting_codes).
+ * To remove a tag just use `/ltag remove [ign/uuid]`
 
-export type tagObject = {
-	formatted: string
-	extra: { text: undefined | string }
-}
-export async function getTags(client: LilithClient, uuid: string, thirdParty = true): Promise<tagObject> {
-	const perm_providers = permission('lilith.tags.providers')
-	const perm_personal = permission('lilith.tags.personal')
+ * ### Shared Tags
+ * To share your tag list you need its invite code. To get it use the `/ltag invite`.
+ * Default Hypixel ranks and slurs are blacklisted, and all rank changes are logged for moderation purposes.
 
-	if (!perm_providers && !perm_personal) return { formatted: '', extra: { text: null } }
-	try {
-		const configuration = config().tags
-		if (!configuration.enabled) return { formatted: '', extra: { text: null } }
+ * ![](/images/tags-invite.png)
 
-		const tagObj = client.tags[uuid]
-		const hasTag = tagObj && tagObj.value !== ''
-		if ((!hasTag || !tagObj) && thirdParty && perm_providers) {
-			return getThirdPartyTags(configuration.providers.priority, uuid, configuration)
-		}
+ * To join a tag list you need its id.
+ * After that, run `/ltag join [id]`
+ *
+ * Changelog - Version 2.0.0:
+ * Added shared tag lists.
+ * Changelog - Version 1.0.21:
+ * Tags hotfix
+ * Changelog - Versions 1.0.19 and 1.0.20:
+ * Optimize building username cache for tags
+ * Fix tags for expired gamepass accounts
+ */
 
-		if (perm_personal && hasTag) {
-			return {
-				formatted: ` &r&7(&f${tagObj.value}&r&7)&r`,
-				extra: tagObj.extra
-					? (MessageBuilder.fromString(tagObj.extra).toJSON() as {
-							text: string
-						})
-					: { text: undefined },
-			}
-		}
-
-		return { formatted: '', extra: { text: null } }
-	} catch (e) {
-		Lilith.log.info(e, uuid)
-		return { formatted: '', extra: { text: null } }
-	}
-}
-
-async function getThirdPartyTags(
-	provider: 'urchin' | 'seraph' | 'duelsplus',
-	uuid: string,
-	configuration: { enabled?: boolean; sharing?: boolean; providers: any },
-): Promise<tagObject> {
-	switch (provider) {
-		case 'seraph': {
-			if (configuration.providers.seraph.enabled && configuration.providers.seraph.key !== '') {
-				const seraphTag = await getSeraphTag(uuid, configuration.providers.seraph.key)
-				if (seraphTag.formatted === '' && configuration.providers.urchin.enabled) {
-					return await getUrchinTags(uuid)
-				}
-				return seraphTag
-			}
-			if (configuration.providers.urchin.enabled) return await getUrchinTags(uuid)
-			return { formatted: '', extra: { text: null } }
-		}
-		case 'urchin': {
-			if (configuration.providers.urchin.enabled) {
-				const urchinTag = await getUrchinTags(uuid)
-				if (urchinTag.formatted === '' && configuration.providers.seraph.enabled) {
-					return await getSeraphTag(uuid, configuration.providers.seraph.key)
-				}
-				return urchinTag
-			}
-			if (configuration.providers.seraph.enabled) return await getSeraphTag(uuid, configuration.providers.seraph.key)
-			return { formatted: '', extra: { text: null } }
-		}
-		case 'duelsplus': {
-			if (configuration.providers.duelsplus.enabled) {
-				const venxmTag = await getVenxmTags(uuid)
-				if (venxmTag.formatted === '' && configuration.providers.urchin.enabled) {
-					return await getUrchinTags(uuid)
-				}
-				return venxmTag
-			}
-			if (configuration.providers.urchin.enabled) return await getUrchinTags(uuid)
-			return { formatted: '', extra: { text: null } }
-		}
-	}
-}
-
-async function getUrchinTags(uuid: string): Promise<tagObject> {
-	const request = await (
-		await fetch(`https://urchin.ws/player/${uuid}?sources=ME&key=${config().tags.providers.urchin.key}`, {
-			headers: {
-				'User-Agent': `Lilith Client v${VERSION} ${getCachedInfo().id}`,
+registerCommand('ltag', [], {
+	execute: async (client, _raw, parsed) => {
+		const cmd = new Subcommand({
+			usage: () =>
+				chatJson(client, {
+					color: 'red',
+					text: 'Lilith ',
+					extra: [
+						{
+							color: 'dark_gray',
+							text: '> ',
+						},
+						{
+							color: 'gray',
+							text: 'Please use either ',
+						},
+						{
+							color: 'red',
+							text: 'set',
+						},
+						{
+							color: 'gray',
+							text: ', ',
+						},
+						{
+							color: 'red',
+							text: 'remove',
+						},
+						{
+							color: 'gray',
+							text: ', ',
+						},
+						{
+							color: 'red',
+							text: 'join',
+						},
+						{
+							color: 'red',
+							text: 'invite',
+						},
+						{
+							color: 'gray',
+							text: ', or ',
+						},
+						{
+							color: 'gray',
+							text: '. For more information, see ',
+						},
+						{
+							color: 'red',
+							clickEvent: {
+								action: 'open_url',
+								value: 'https://docs.lilith.rip/features/tags',
+							},
+							hoverEvent: {
+								action: 'show_text',
+								value: 'https://docs.lilith.rip/features/tags',
+							},
+							text: 'the documentation',
+						},
+					],
+				}),
+			permission: {
+				has: permission('lilith.tags.personal'),
+				error: () => {
+					chatPurchase(client, 'Tags', 'lilith.sub.t1')
+				},
 			},
 		})
-	).text()
-	if (request === '"Invalid Key"') return { formatted: '', extra: { text: null } }
-	const urchinPlayer: UrchinPlayer = JSON.parse(request)
-	if (urchinPlayer.uuid === '' || urchinPlayer.tags.length === 0 || urchinPlayer.tags.length > 2)
-		/* uuid==="" => player not found, invalid uuid || tags.length === 0 => no tags || > 2 means the player is a urchin staff */
-		return { formatted: '', extra: { text: null } }
 
-	const tag = urchinPlayer.tags.find((tag) => tag.type !== 'account') ?? urchinPlayer.tags[0]
-	const extra = urchinPlayer.tags.find((tag) => tag.type === 'account') ?? urchinPlayer.tags[0]
+		cmd.register('set').action(async (args: string[]) => {
+			const player = args[0]
+			const tag = args[1]
 
-	const tagObject = {
-		tag: readableTag[tag.type] ?? 'info',
-		reason: `&n${readableTag[tag.type]}:&r ${tag.reason}`,
-		extra: tag.reason === extra.reason || extra.reason === '' ? '' : `\n&r&n&6ACCOUNT:&r ${extra}`,
-	}
+			if (player == null || !player.match(/^[a-zA-Z0-9_]{2,16}$/))
+				return chat(
+					client,
+					'&cLilith &8>&7 Please specify a target user and tag with &c/ltag set &l<username> <new_tag>&r &o[extra]',
+				)
+			if (tag == null)
+				return chat(
+					client,
+					'&cLilith &8>&7 Please specify a tag with &c/ltag set <username> &l<new_tag>&r &o[extra]',
+				)
 
-	return {
-		formatted: ` &r&7(&f${tagObject.tag}&r&7)&r`,
-		extra: MessageBuilder.fromString(`${tagObject.reason}${tagObject.extra}`).toJSON() as { text: string },
-	}
-}
+			const mojangReq = await resolveUsername(client, player)
+			if (mojangReq === null) return
+			const { id, name } = mojangReq
 
-async function getVenxmTags(uuid: string): Promise<tagObject> {
-	if (venxmtagsMap === null) {
-		const venxm: {
-			reportedId: string
-			reason: 'bot' | 'closet' | 'blatant'
-		}[] = await (await fetch('https://api.venxm.uk/static/cheaters')).json()
-		venxmtagsMap = new Map(venxm.map((data) => [data.reportedId, data.reason]))
-	}
-	if (venxmtagsMap.has(uuid)) {
-		return {
-			formatted: ` &r&7(&f${readableTag[venxmtagsMap.get(uuid)]}&r&7)&r`,
-			extra: { text: null },
-		}
-	} else return { formatted: '', extra: { text: null } }
-}
+			const extra = args.slice(2).join(' ').trim()
 
-async function getSeraphTag(uuid: string, key: string): Promise<tagObject> {
-	const headers = {
-		'User-Agent': `Lilith Client v${VERSION} ${getCachedInfo().id}`,
-		'seraph-api-key': key,
-		Accept: 'application/json',
-	}
+			client.tags[id] = { value: tag, extra }
+			chat(client, `&cLilith &8> &7Set tag for &c${name}&7 to &c${tag}&7.`)
 
-	const seraphPlayer = (await (await fetch(`https://api.seraph.si/${uuid}/blacklist`, { headers })).json()) as SeraphPlayer
+			lilithWebsocket.send<'updateTags'>('updateTags', { uuid: id, value: args[1], extra })
+		})
 
-	if (!seraphPlayer.success) return { formatted: '', extra: { text: null } }
-	if (!seraphPlayer.data.blacklist.tagged) return { formatted: '', extra: { text: null } }
-	const tagObject = {
-		tag: readableSeraphTag[seraphPlayer.data.blacklist.report_type] ?? 'info',
-		reason: `&n${readableSeraphTag[seraphPlayer.data.blacklist.report_type]}:&r ${seraphPlayer.data.blacklist.tooltip}`,
-		extra: seraphPlayer.data.blacklist.verified ? '\n&r&aVerified report!' : '',
-	}
+		cmd.register('remove').action(async (args: string[]) => {
+			const player = args[0]
 
-	return {
-		formatted: ` &r&7(&f${tagObject.tag}&r&7)&r`,
-		extra: MessageBuilder.fromString(`${tagObject.reason}${tagObject.extra}`).toJSON() as { text: string },
-	}
-}
+			if (player == null || !player.match(/^[a-zA-Z0-9_]{2,16}$/))
+				return chat(client, '&cLilith &8>&7 Please specify a valid username with &c/ltag remove &l<username>')
 
-type UrchinPlayer = {
-	uuid: string
-	tags: {
-		type:
-			| 'confirmed_cheater'
-			| 'info'
-			| 'closet_cheater'
-			| 'blatant_cheater'
-			| 'sniper'
-			| 'legit_sniper'
-			| 'possible_sniper'
-			| 'account'
-			| 'caution'
-		reason: string
-	}[]
-}
+			const mojangReq = await resolveUsername(client, player)
+			if (mojangReq === null) return
+			const { id, name } = mojangReq
 
-type SeraphPlayer = {
-	code: number
-	data: {
-		annoylist:
-			| {
-					tagged: true
-					tooltip: string
-			  }
-			| { tagged: false }
-		blacklist:
-			| {
-					reason: string
-					report_type: string
-					tagged: true
-					timestamp: number
-					tooltip: string
-					verified: boolean
-			  }
-			| { tagged: false }
-		bot:
-			| {
-					kay: boolean
-					tagged: true
-					unidentified: boolean
-			  }
-			| { tagged: false }
-		customTag: string
-		key_type: string
-		member:
-			| {
-					tagged: true
-					tooltip: string
-			  }
-			| { tagged: false }
-		name_change:
-			| {
-					changed: boolean
-					last_change: number
-					tagged: true
-					tooltip: string
-			  }
-			| { tagged: false }
-		safelist: {
-			AddedBy: string
-			added_by: string
-			discord_linked: string
-			personal: boolean
-			security_level: number
-			tagged: boolean
-			time_added: number
-			time_updated: number
-			timesKilled: number
-			tooltip: string
-		}
-		statistics: {
-			encounters?: number
-			threat_level?: number
-		}
-		username: string
-		uuid: string
-	}
-	msTime: number
-	success: boolean
-}
+			client.tags[id] = undefined
+			chat(client, `&cLilith &8> &7Removed tag for &c${name}`)
 
-const readableTag = {
-	confirmed_cheater: '&5CHEATER',
-	info: '&fINFO',
-	closet_cheater: '&6CLOSET',
-	blatant_cheater: '&6BLATANT',
-	sniper: '&4SNIPER',
-	legit_sniper: '&4SNIPER',
-	possible_sniper: '&4SNIPER',
-	account: '&6ACCOUNT',
-	caution: '&6CAUTION',
-	closet: '&6CLOSET',
-	blatant: '&6BLATANT',
-	bot: '&8BOT',
-}
+			lilithWebsocket.send<'updateTags'>('updateTags', { uuid: id, value: '', extra: '' })
+		})
 
-const readableSeraphTag = {
-	Annoying: '&6ANNOYING',
-	'Alternative Account': '&dALT ACCOUNT',
-	Bot: '&8BOT',
-	'Closet Cheater': '&cCLOSET',
-	'Blatant Cheater': '&4BLATANT',
-	'Blatant Cheating': '&4BLATANT',
-	Sniper: '&4SNIPER',
-	'Legit Sniper': '&cSNIPER',
-	'Sniping Potential': '&eSNIPER?',
-	Caution: '&eCAUTION',
-	annoy_list: '&6ANNOYING',
-	alt: '&dALT ACCOUNT',
-	bot: '&8BOT',
-	cheating_closet: '&cCLOSET',
-	cheating_blatant: '&4BLATANT',
-	sniping: '&4SNIPER',
-	sniping_legit: '&cSNIPER',
-	sniping_potential: '&eSNIPER?',
-	caution: '&eCAUTION',
-	'Closet Cheating': '&cCLOSET',
-}
+		cmd.register('join').action((args) => {
+			const id = args[0]
+			if (typeof id !== 'string')
+				return chat(client, '&cLilith &8>&7 Please specify a target list with &c/ltag join &l<id>')
+
+			lilithWebsocket.send<'subscribeTags'>('subscribeTags', id)
+			chat(client, `&cLilith &8> &Join tag list with id: &c${id}.`)
+		})
+
+		cmd.register('invite').action(() => {
+			chat(client, '&cLilith &8> &7Share your tag list with your friends!')
+			chatJson(client, [
+				'',
+				{ text: 'Lilith ', color: 'red' },
+				{ text: '> ', color: 'dark_gray' },
+				{
+					text: 'Click here to display the code in chat',
+					clickEvent: {
+						action: 'suggest_command',
+						value: `${client.tagID}`,
+					},
+					hoverEvent: {
+						action: 'show_text',
+						value: 'Display invite.',
+					},
+					color: 'red',
+					underlined: true,
+				},
+				{
+					text: '.',
+					color: 'gray',
+				},
+			])
+		})
+
+		cmd.run(parsed)
+	},
+})

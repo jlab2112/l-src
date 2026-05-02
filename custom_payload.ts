@@ -3,10 +3,10 @@ import { Ids } from '@/types/packets/minecraft/ids.js'
 import type { Play } from '@/types/packets/minecraft/packets.js'
 
 export const namespace = 'minecraft'
-export const id = Ids.Play.toClient.custom_payload
-export const direction = 'toClient'
+export const id = Ids.Play.toServer.custom_payload
+export const direction = 'toServer'
 
-export const read = (packet: PacketReader): Play.toClient.CustomPayloadPacket => {
+export const read = (packet: PacketReader): Play.toServer.CustomPayloadPacket => {
 	return {
 		metadata: {
 			name: 'custom_payload',
@@ -20,6 +20,6 @@ export const read = (packet: PacketReader): Play.toClient.CustomPayloadPacket =>
 	}
 }
 
-export const write = (packet: Play.toClient.CustomPayloadPacket): PacketWriter => {
+export const write = (packet: Play.toServer.CustomPayloadPacket): PacketWriter => {
 	return new PacketWriter(id).writeString(packet.data.channel).write(packet.data.data)
 }

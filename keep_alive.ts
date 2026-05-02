@@ -3,10 +3,10 @@ import { Ids } from '@/types/packets/minecraft/ids.js'
 import type { Play } from '@/types/packets/minecraft/packets.js'
 
 export const namespace = 'minecraft'
-export const id = Ids.Play.toClient.keep_alive
-export const direction = 'toClient'
+export const id = Ids.Play.toServer.keep_alive
+export const direction = 'toServer'
 
-export const read = (packet: PacketReader): Play.toClient.KeepAlivePacket => {
+export const read = (packet: PacketReader): Play.toServer.KeepAlivePacket => {
 	return {
 		metadata: {
 			name: 'keep_alive',
@@ -19,6 +19,6 @@ export const read = (packet: PacketReader): Play.toClient.KeepAlivePacket => {
 	}
 }
 
-export const write = (packet: Play.toClient.KeepAlivePacket): PacketWriter => {
+export const write = (packet: Play.toServer.KeepAlivePacket): PacketWriter => {
 	return new PacketWriter(id).writeVarInt(packet.data.keepAliveId)
 }

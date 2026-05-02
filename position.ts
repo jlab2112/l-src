@@ -1,35 +1,50 @@
-import { type PacketReader, PacketWriter } from '@lilithmod/unborn-mcproto'
+import { addAsyncListener } from '@/events'
+import type { PacketEvent } from '@/types/events'
 import { Ids } from '@/types/packets/minecraft/ids'
 import type { Play } from '@/types/packets/minecraft/packets'
 
-export const namespace = 'minecraft'
-export const id = Ids.Play.toClient.position
-export const direction = 'toClient'
+addAsyncListener<PacketEvent<Play.toClient.PositionPacket>>(
+	Ids.Play.toClient.position,
+	'toClient',
+	'Clientbound Position Listener',
+	1,
+	async ({ packet, client }) => {
+		client.position = {
+			x: packet.data.x,
+			y: packet.data.y,
+			z: packet.data.z,
+			yaw: packet.data.yaw,
+			pitch: packet.data.pitch,
+		}
+	},
+)
 
-export function read(packet: PacketReader): Play.toClient.PositionPacket {
-	return {
-		metadata: {
-			name: 'position',
-			state: 'play',
-			id,
-		},
-		data: {
-			x: packet.readDouble(),
-			y: packet.readDouble(),
-			z: packet.readDouble(),
-			yaw: packet.readFloat(),
-			pitch: packet.readFloat(),
-			flags: packet.readUInt8(),
-		},
-	}
-}
+addAsyncListener<PacketEvent<Play.toServer.PositionPacket>>(
+	Ids.Play.toServer.position,
+	'toServer',
+	'Serverbound Position Listener',
+	1,
+	async ({ packet, client }) => {
+		client.position = {
+			x: packet.data.x,
+			y: packet.data.y,
+			z: packet.data.z,
+		}
+	},
+)
 
-export function write(packet: Play.toClient.PositionPacket): PacketWriter {
-	return new PacketWriter(id)
-		.writeDouble(packet.data.x)
-		.writeDouble(packet.data.y)
-		.writeDouble(packet.data.z)
-		.writeFloat(packet.data.yaw)
-		.writeFloat(packet.data.pitch)
-		.writeUInt8(packet.data.flags)
-}
+addAsyncListener<PacketEvent<Play.toServer.PositionLookPacket>>(
+	Ids.Play.toServer.position,
+	'toServer',
+	'Serverbound Position/Look Listener',
+	1,
+	async ({ packet, client }) => {
+		client.position = {
+			x: packet.data.x,
+			y: packet.data.y,
+			z: packet.data.z,
+			yaw: packet.data.yaw,
+			pitch: packet.data.pitch,
+		}
+	},
+)
