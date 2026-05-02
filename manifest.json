@@ -1,0 +1,66 @@
+{
+  "payload": "/Users/T/Downloads/lre/live-sample/lilith-macos-2.0.13",
+  "copied_payload": "/Users/T/Downloads/lilith-analysis-2.0.13/lilith-macos-2.0.13",
+  "bundle_count": 8,
+  "source_map_count": 0,
+  "bun_vfs_path_count": 46,
+  "bundles": [
+    {
+      "offset": 63483920,
+      "start": 63483920,
+      "end": 63484007,
+      "length": 87,
+      "path": "/Users/T/Downloads/lilith-analysis-2.0.13/bundles/bundle-01.js"
+    },
+    {
+      "offset": 63484008,
+      "start": 63484008,
+      "end": 63484026,
+      "length": 18,
+      "path": "/Users/T/Downloads/lilith-analysis-2.0.13/bundles/bundle-02.js"
+    },
+    {
+      "offset": 67506624,
+      "start": 67506624,
+      "end": 70630653,
+      "length": 3124029,
+      "path": "/Users/T/Downloads/lilith-analysis-2.0.13/bundles/bundle-03.js"
+    },
+    {
+      "offset": 97790569,
+      "start": 97790569,
+      "end": 100914598,
+      "length": 3124029,
+      "path": "/Users/T/Downloads/lilith-analysis-2.0.13/bundles/bundle-04.js"
+    },
+    {
+      "offset": 159937978,
+      "start": 159937978,
+      "end": 159938065,
+      "length": 87,
+      "path": "/Users/T/Downloads/lilith-analysis-2.0.13/bundles/bundle-05.js"
+    },
+    {
+      "offset": 159938066,
+      "start": 159938066,
+      "end": 159938084,
+      "length": 18,
+      "path": "/Users/T/Downloads/lilith-analysis-2.0.13/bundles/bundle-06.js"
+    },
+    {
+      "offset": 164037040,
+      "start": 164037040,
+      "end": 167159367,
+      "length": 3122327,
+      "path": "/Users/T/Downloads/lilith-analysis-2.0.13/bundles/bundle-07.js"
+    },
+    {
+      "offset": 192880425,
+      "start": 192880425,
+      "end": 196002752,
+      "length": 3122327,
+      "path": "/Users/T/Downloads/lilith-analysis-2.0.13/bundles/bundle-08.js"
+    }
+  ],
+  "source_maps": []
+}

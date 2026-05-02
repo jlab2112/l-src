@@ -1,0 +1,159 @@
+{
+  "sample": "/Users/T/Downloads/lilith-analysis-2.0.13/lilith-macos-2.0.13",
+  "sha256": "764a194cf2ba70b89c53ded16e00d758de52939ba32ab5d7ea8f00852786a843",
+  "size": 196997026,
+  "architectures": [
+    {
+      "architecture": "x86_64",
+      "offset": 4096,
+      "size": 101679616,
+      "bun_segment": {
+        "name": "__BUN",
+        "vmaddr": 4371038208,
+        "vmsize": 33423360,
+        "fileoff": 67502080,
+        "filesize": 33423360,
+        "maxprot": 3,
+        "initprot": 3,
+        "nsects": 1,
+        "flags": 0
+      },
+      "bunfs_paths": [
+        {
+          "path": "/$bunfs/root/dist/sources/lilith.core.obf.js",
+          "offset_in_bun": 375,
+          "absolute_offset": 67506551
+        },
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-kdm5gc0x.dylib",
+          "offset_in_bun": 669298,
+          "absolute_offset": 68175474
+        },
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-kdm5gc0x.dylib",
+          "offset_in_bun": 13005152,
+          "absolute_offset": 80511328
+        },
+        {
+          "path": "/$bunfs/root/dist/sources/lilith.core.obf.js",
+          "offset_in_bun": 30284303,
+          "absolute_offset": 97790479
+        },
+        {
+          "path": "/$bunfs/root/dist/sources/lilith.core.obf.js",
+          "offset_in_bun": 30284348,
+          "absolute_offset": 97790524
+        },
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-kdm5gc0x.dylib",
+          "offset_in_bun": 30953243,
+          "absolute_offset": 98459419
+        },
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-kdm5gc0x.dylib",
+          "offset_in_bun": 33408423,
+          "absolute_offset": 100914599
+        }
+      ],
+      "native_helpers": [
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-kdm5gc0x.dylib",
+          "path_offset_in_bun": 33408423,
+          "embedded_macho_offset_in_bun": 33408466,
+          "embedded_macho_absolute_offset": 100914642,
+          "size": 8920,
+          "sha256": "7d9c52da2b1dd133adce0ee3a7e57c96836a5b48d05a833c14f0542abe75df9f",
+          "filetype": "MH_DYLIB",
+          "imports": [
+            "/usr/lib/libSystem.B.dylib"
+          ],
+          "exports": [
+            "_decrypt_ffi",
+            "_destroy_ctx",
+            "_destroy_data",
+            "_encrypt_ffi",
+            "_get_ctx",
+            "_get_deallocator",
+            "_init"
+          ]
+        }
+      ]
+    },
+    {
+      "architecture": "arm64",
+      "offset": 101695488,
+      "size": 95301538,
+      "bun_segment": {
+        "name": "__BUN",
+        "vmaddr": 4367122432,
+        "vmsize": 32014336,
+        "fileoff": 62341120,
+        "filesize": 32014336,
+        "maxprot": 3,
+        "initprot": 3,
+        "nsects": 1,
+        "flags": 0
+      },
+      "bunfs_paths": [
+        {
+          "path": "/$bunfs/root/dist/sources/lilith.core.obf.js",
+          "offset_in_bun": 367,
+          "absolute_offset": 164036975
+        },
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-b2jnnv61.dylib",
+          "offset_in_bun": 669485,
+          "absolute_offset": 164706093
+        },
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-b2jnnv61.dylib",
+          "offset_in_bun": 12286144,
+          "absolute_offset": 176322752
+        },
+        {
+          "path": "/$bunfs/root/dist/sources/lilith.core.obf.js",
+          "offset_in_bun": 28843727,
+          "absolute_offset": 192880335
+        },
+        {
+          "path": "/$bunfs/root/dist/sources/lilith.core.obf.js",
+          "offset_in_bun": 28843772,
+          "absolute_offset": 192880380
+        },
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-b2jnnv61.dylib",
+          "offset_in_bun": 29512870,
+          "absolute_offset": 193549478
+        },
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-b2jnnv61.dylib",
+          "offset_in_bun": 31966145,
+          "absolute_offset": 196002753
+        }
+      ],
+      "native_helpers": [
+        {
+          "path": "/$bunfs/root/libaes128_cfb8-b2jnnv61.dylib",
+          "path_offset_in_bun": 31966145,
+          "embedded_macho_offset_in_bun": 31966188,
+          "embedded_macho_absolute_offset": 196002796,
+          "size": 33928,
+          "sha256": "6a8a099730cbea4cb85ce7a56bc4ef61f1920a4afcb5fa287fa6734d1190d8d2",
+          "filetype": "MH_DYLIB",
+          "imports": [
+            "/usr/lib/libSystem.B.dylib"
+          ],
+          "exports": [
+            "_decrypt_ffi",
+            "_destroy_ctx",
+            "_destroy_data",
+            "_encrypt_ffi",
+            "_get_ctx",
+            "_get_deallocator",
+            "_init"
+          ]
+        }
+      ]
+    }
+  ]
+}
